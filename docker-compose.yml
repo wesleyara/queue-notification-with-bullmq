@@ -32,6 +32,34 @@ services:
       - RI_REDIS_ALIAS=notification-service-redis
       - RI_REDIS_PASSWORD=${REDIS_PASSWORD}
 
+  ocr-provider:
+    build:
+      context: ./OcrProviderService
+    container_name: ocr-provider
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    env_file: ./OcrProviderService/.env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  ocr-consumer:
+    build:
+      context: ./OcrConsumerService
+    container_name: ocr-consumer
+    ports:
+      - "8001:8001"
+    restart: unless-stopped
+    env_file: ./OcrConsumerService/.env
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   redis_data:
   redisinsight_data:

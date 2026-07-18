@@ -10,23 +10,23 @@ export const connection: ConnectionOptions = {
   password: process.env.REDIS_PASSWORD,
 };
 
-const notificationKey = "notification";
+const notificationKey = "ocr_notification";
 
 export const notificationQueue = new Queue(notificationKey, { connection });
 
 export const notificationWorker = new Worker(
   notificationKey,
   async (job: Job) => {
-    const { message, recipient } = job.data;
-    console.log(`Sending notification to ${recipient}: ${message}`);
+    const { title, message, recipient } = job.data;
+    console.log(`Sending notification to ${recipient}: ${title ? `[${title}] ` : ""}${message}`);
 
-    writeNotificationToFile(message, recipient);
+    writeNotificationToFile(message, recipient, title);
     return "Notification sent successfully";
   },
   { connection },
 );
 
-function writeNotificationToFile(message: string, recipient: string) {
+function writeNotificationToFile(message: string, recipient: string, title?: string) {
   const notificationsDir = path.join(__dirname, "../../../notifications");
   if (!fs.existsSync(notificationsDir)) {
     fs.mkdirSync(notificationsDir);
@@ -36,7 +36,7 @@ function writeNotificationToFile(message: string, recipient: string) {
   const filename = `notification-${timestamp}.log`;
   const filePath = path.join(notificationsDir, filename);
 
-  const content = `Recipient: ${recipient}\nMessage: ${message}\nTimestamp: ${new Date().toISOString()}`;
+  const content = `Recipient: ${recipient}\n${title ? `Title: ${title}\n` : ""}Message: ${message}\nTimestamp: ${new Date().toISOString()}`;
 
   fs.writeFileSync(filePath, content);
 }

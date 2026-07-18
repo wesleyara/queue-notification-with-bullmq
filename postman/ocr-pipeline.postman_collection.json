@@ -1,0 +1,49 @@
+{
+  "info": {
+    "name": "OCR Pipeline (BullMQ PoC)",
+    "description": "Requests for OcrProviderService and OcrConsumerService. Provider publishes jobs on the \"ocr\" queue; the consumer processes them and publishes on \"ocr_notification\", which NotificationService consumes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "ocr_provider_url", "value": "http://localhost:8000" },
+    { "key": "ocr_consumer_url", "value": "http://localhost:8001" }
+  ],
+  "item": [
+    {
+      "name": "OCR Provider",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{ocr_provider_url}}/health", "host": ["{{ocr_provider_url}}"], "path": ["health"] }
+          }
+        },
+        {
+          "name": "Queue OCR job",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{ocr_provider_url}}/ocr", "host": ["{{ocr_provider_url}}"], "path": ["ocr"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_url\": \"https://example.com/files/invoice-001.pdf\",\n  \"recipient\": \"wesleyara.contato@gmail.com\",\n  \"processing_time_seconds\": 6\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "OCR Consumer",
+      "item": [
+        {
+          "name": "Health",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{ocr_consumer_url}}/health", "host": ["{{ocr_consumer_url}}"], "path": ["health"] }
+          }
+        }
+      ]
+    }
+  ]
+}
