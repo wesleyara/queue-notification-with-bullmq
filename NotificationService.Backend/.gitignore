@@ -7,3 +7,4 @@ package-lock.json
 yarn.lock
 bun.lock
 pnpm-lock.yaml
+/app/generated/prisma

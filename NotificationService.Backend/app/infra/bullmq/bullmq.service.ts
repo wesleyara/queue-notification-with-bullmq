@@ -2,6 +2,8 @@ import { ConnectionOptions, Job, Queue, Worker } from "bullmq";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
+
+import { prisma } from "../prisma/prisma.service";
 dotenv.config();
 
 export const connection: ConnectionOptions = {
@@ -20,23 +22,17 @@ export const notificationWorker = new Worker(
     const { title, message, recipient } = job.data;
     console.log(`Sending notification to ${recipient}: ${title ? `[${title}] ` : ""}${message}`);
 
-    writeNotificationToFile(message, recipient, title);
+    await prisma.notification.create({
+      data: {
+        title: title || null,
+        message,
+        recipient,
+      },
+    });
+
+    // TODO: implement this
+
     return "Notification sent successfully";
   },
   { connection },
 );
-
-function writeNotificationToFile(message: string, recipient: string, title?: string) {
-  const notificationsDir = path.join(__dirname, "../../../notifications");
-  if (!fs.existsSync(notificationsDir)) {
-    fs.mkdirSync(notificationsDir);
-  }
-
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const filename = `notification-${timestamp}.log`;
-  const filePath = path.join(notificationsDir, filename);
-
-  const content = `Recipient: ${recipient}\n${title ? `Title: ${title}\n` : ""}Message: ${message}\nTimestamp: ${new Date().toISOString()}`;
-
-  fs.writeFileSync(filePath, content);
-}
