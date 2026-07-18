@@ -1,42 +1,35 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted } from "vue";
 
-const msg = ref("Hello Vite + Vue 3 Template");
-const count = ref(0);
+import AppHeader from "../components/AppHeader.vue";
+import TestNotificationForm from "../components/TestNotificationForm.vue";
+import { useNotificationsStore } from "../stores/notifications";
+import { useRecipientStore } from "../stores/recipient";
+
+const recipientStore = useRecipientStore();
+const notificationsStore = useNotificationsStore();
+
+onMounted(() => {
+  if (recipientStore.recipient) {
+    notificationsStore.init(recipientStore.recipient);
+  }
+});
 </script>
 
 <template>
-  <section class="flex flex-col items-center justify-center gap-5 px-2 text-center">
-    <h1>{{ msg }}</h1>
+  <div class="min-h-screen bg-gray-50">
+    <AppHeader />
 
-    <img alt="Vue logo" src="/vite.svg" class="size-32" />
-
-    <button class="rounded-md border border-black p-2" type="button" @click="count++">
-      count is {{ count }}
-    </button>
-
-    <span>
-      <p>
-        Edit
-        <code class="rounded-md bg-[#ebebeb] p-1 font-barlow">views/HomeView.vue</code>
-        to test HMR
+    <main class="mx-auto max-w-3xl px-6 py-10">
+      <h1 class="text-xl font-semibold text-gray-900">Olá, {{ recipientStore.recipient }}</h1>
+      <p class="mt-2 text-sm text-gray-500">
+        Suas notificações aparecerão em tempo real no sino no topo da página.
       </p>
 
-      <p>
-        This template is also available in
-        <a
-          class="text-blue-500 hover:underline"
-          href="https://github.com/wesleyara/vue-template"
-          target="_blank"
-        >
-          GitHub
-        </a>
-      </p>
-
-      <p>
-        Have configured Eslint, Prettier, Pinia, TailwindCSS, VueIcons, VueUse, Vue Devtools and Vue
-        Router.
-      </p>
-    </span>
-  </section>
+      <TestNotificationForm
+        v-if="recipientStore.recipient"
+        :default-recipient="recipientStore.recipient"
+      />
+    </main>
+  </div>
 </template>

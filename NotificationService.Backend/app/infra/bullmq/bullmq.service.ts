@@ -1,9 +1,8 @@
 import { ConnectionOptions, Job, Queue, Worker } from "bullmq";
 import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
 
 import { prisma } from "../prisma/prisma.service";
+import { getIO } from "../socket/socket.service";
 dotenv.config();
 
 export const connection: ConnectionOptions = {
@@ -22,7 +21,7 @@ export const notificationWorker = new Worker(
     const { title, message, recipient } = job.data;
     console.log(`Sending notification to ${recipient}: ${title ? `[${title}] ` : ""}${message}`);
 
-    await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         title: title || null,
         message,
@@ -30,7 +29,14 @@ export const notificationWorker = new Worker(
       },
     });
 
-    // TODO: implement this
+    getIO()?.to(recipient).emit("new-notification", {
+      id: notification.id,
+      title: notification.title,
+      message: notification.message,
+      recipient: notification.recipient,
+      read: notification.read,
+      createdAt: notification.createdAt.toISOString(),
+    });
 
     return "Notification sent successfully";
   },

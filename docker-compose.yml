@@ -61,6 +61,7 @@ services:
     env_file: ./OcrProviderService/.env
     environment:
       - REDIS_HOST=redis
+      - CORS_ORIGIN=http://localhost:5173
     depends_on:
       redis:
         condition: service_healthy
@@ -78,6 +79,37 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+
+  notification-backend:
+    build:
+      context: ./NotificationService.Backend
+    container_name: notification-service-backend
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    env_file: ./NotificationService.Backend/.env
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      - CORS_ORIGIN=http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  notification-frontend:
+    build:
+      context: ./NotificationService.Frontend
+    container_name: notification-service-frontend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+    environment:
+      - VITE_SOCKET_URL=http://localhost:8080
+      - VITE_OCR_PROVIDER_URL=http://localhost:8000
+    depends_on:
+      - notification-backend
 
 volumes:
   redis_data:

@@ -1,11 +1,20 @@
+import os
 import uuid
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.contracts import OcrJobPayload, OcrRequest
 from app.infra.bullmq_queue import ocr_queue
 
 app = FastAPI(title="OCR Provider Service")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[os.getenv("CORS_ORIGIN", "*")],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")

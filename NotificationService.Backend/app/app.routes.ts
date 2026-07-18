@@ -1,8 +1,10 @@
+import type { Router } from "express";
+
 import express from "express";
 
 import { AppController } from "./app.controller";
 
-const router = express.Router();
+const router: Router = express.Router();
 
 const appController = new AppController();
 

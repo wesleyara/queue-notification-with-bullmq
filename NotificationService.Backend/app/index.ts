@@ -1,11 +1,13 @@
+import "dotenv/config";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
+import http from "http";
 
 import appRoutes from "./app.routes";
+import { initSocket } from "./infra/socket/socket.service";
 
-dotenv.config();
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 8080;
 
 app.use(
@@ -18,6 +20,8 @@ app.use(express.json());
 
 app.use("/api", appRoutes);
 
-app.listen(PORT, () => {
+initSocket(httpServer);
+
+httpServer.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
